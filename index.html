@@ -6,7 +6,7 @@
     <meta name="author" content="Luiza Andrade, Leonardo Viotti, Rob Marty, Rony Rodriguez, Luis Eduardo San Martin" />
     <link href="libs/panelset/panelset.css" rel="stylesheet" />
     <script src="libs/panelset/panelset.js"></script>
-    <script type="application/json" id="xaringanExtra-editable-docid">{"id":"xd3e0b74f9d74cf995ba0d8dabb5d801","expires":14}</script>
+    <script type="application/json" id="xaringanExtra-editable-docid">{"id":"xcd126d3ba3f47ff9ad424c76e22f47e","expires":14}</script>
     <script src="libs/himalaya/himalaya.js"></script>
     <script src="libs/js-cookie/js.cookie.js"></script>
     <link href="libs/editable/editable.css" rel="stylesheet" />
@@ -30,7 +30,7 @@ class: center, middle, inverse, title-slide
 # Descriptive Analysis
 ## <a href="https://github.com/worldbank">R for Advanced Stata Users</a>
 ### Luiza Andrade, Leonardo Viotti, Rob Marty, Rony Rodriguez, Luis Eduardo San Martin
-### DIME |The World Bank <br> 18 November 2020
+### DIME |The World Bank <br> 30 November 2020
 
 ---
 
@@ -42,7 +42,7 @@ class: center, middle, inverse, title-slide
 width: 50px;
 height: 128px;
 z-index: 0;
-background-image: url(pics/lightbulb.png);
+background-image: url(img/lightbulb.png);
 background-size: contain;
 background-repeat: no-repeat;
 position: absolute;
@@ -76,9 +76,13 @@ top:1em;right:1em;
 # Table of contents
 
 .vlarge[
-1. [Quick summary statistics](#sec3)
-2. [Descriptive statistics tables](#sec4)
-3. [Regression tables](#sec5)
+1. [Quick summary statistics](#exploring)
+2. [Descriptive statistics tables](#desc_tables)
+3. [Exporting descriptive statistics tables](#exporting)
+3. [Formatting tables](#beautifying)
+3. [Aggregating observations](#aggregating)
+3. [Running regressions](#regressing)
+3. [Exporting regression tables](#reg_tables)
 ]
 
 
@@ -226,7 +230,7 @@ str(census)
 ---
 
 class: inverse, center, middle
-name: sec3
+name: exploring
 
 # Quick summary statistics
 
@@ -445,7 +449,7 @@ Note that the output of `table` having a single variable as argument is the same
 ---
 
 class: inverse, center, middle
-name: sec4
+name: desc_tables
 
 # Descriptives tables
 
@@ -455,7 +459,7 @@ name: sec4
 
 # Descriptives tables
 
-## What if you want...
+## What if you want to...
 - ...export the summary statistics to another software?
 - ...customize which statistics to display?
 - ...format the table?
@@ -472,13 +476,16 @@ name: sec4
 # Exploring datasets with *skimr*
 
 .large[
-- The `skimr` package is very similar to `summary`.
-- Its function is to present summary statistics for a dataset.
+- The `skimr` package features are very similar to those of the functions `summary`.
+- It is used to present summary statistics for a dataset.
 - Like `summary`, the statistics presented vary with the class of each variable.
 - `skimr`'s main function is called `skim()`, and its syntax is also very similar to `summary`.
 ]
 
 ---
+
+# Exploring datasets with *skimr*
+
 
 .small[
 
@@ -634,7 +641,7 @@ Here are a few functions that can be used within `sfl()`:
 census %&gt;% 
   summary_stats() %&gt;%
   yank("numeric") %&gt;% # keep only numeric variables on the table
-  select(-n_missing, -complete_rate) # remove daulft statistics
+  select(-n_missing, -complete_rate) # remove default statistics
 ```
 
 
@@ -657,6 +664,15 @@ census %&gt;%
 
 ---
 
+class: inverse, center, middle
+name: exporting
+
+# Exporting tables
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#D38C28' size=1px width=1100px&gt;&lt;/html&gt;
+
+---
+
 # Exporting tables
 
 To export the tables to a different software, we will need a different package, `huxtable`. The easiest way to save tables is through this family of commands:
@@ -674,6 +690,8 @@ To export the tables to a different software, we will need a different package, 
 ]
 
 ---
+
+# Exporting tables
 
 The code below exports the table we just created to Excel and LaTeX
 
@@ -696,6 +714,15 @@ quick_latex(summary_stats_table,
 
 ---
 
+class: inverse, center, middle
+name: beautifying
+
+# Formatting tables
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#D38C28' size=1px width=1100px&gt;&lt;/html&gt;
+
+---
+
 # Beautifying tables
 
 `huxtable` also allows you to edit your table as a data frame in R, and set the formatting so it can be exported with the same layout to multiple software. The code below shows how to do edit `summary_stats_table`
@@ -704,39 +731,122 @@ quick_latex(summary_stats_table,
 
 ```r
 # Extract variable labels from data frame
-census_dictionary &lt;- 
-  data.frame("Variable" = attributes(census)$var.labels,
-             "name" = names(census))
-
-summary_stats_table &lt;-
-   summary_stats_table %&gt;%
-   rename(name = skim_variable) %&gt;% # Rename var with var names so we can merge the datasets
-   left_join(census_dictionary) %&gt;% # Merge to variable labels
-   select(-name) %&gt;% # Keep only variable labels instead of names
-   as_hux # Convert it into a huxtable object
-
-
-summary_stats_table &lt;-
-   summary_stats_table %&gt;% 
-   relocate(Variable) %&gt;%  # Make veriable labels the first column
-   set_header_rows(1, TRUE) %&gt;% # Use stats name as table header
-   set_header_cols("Variable", TRUE)  %&gt;%  # Use variable name as row header
-   theme_basic() # Set a theme for quick formatting
-
-# Now export it
-quick_xlsx(summary_stats_table,
-           file = file.path(rawOutput, "summary-stats-basic.xlsx"))
-
-quick_latex(summary_stats_table,
-           file = file.path(rawOutput, "summary-stats-basic.tex"))
+*census_dictionary &lt;-
+* data.frame("Variable" = attributes(census)$var.labels,
+*            "name" = names(census))
 ```
 ]
 
 ---
 
+# Beautifying tables
+
+`huxtable` also allows you to edit your table as a data frame in R, and set the formatting so it can be exported with the same layout to multiple software. The code below shows how to do edit `summary_stats_table`
+
+.small[
+
+```r
+# Extract variable labels from data frame
+census_dictionary &lt;-
+  data.frame("Variable" = attributes(census)$var.labels,
+             "name" = names(census))
+
+*summary_stats_table &lt;-
+*  summary_stats_table %&gt;%
+*  rename(name = skim_variable) %&gt;% # Rename var with var names so we can merge the datasets
+*  left_join(census_dictionary) %&gt;% # Merge to variable labels
+*  select(-name) %&gt;% # Keep only variable labels instead of names
+*  as_hux # Convert it into a huxtable object
+```
+]
+
+---
+
+# Beautifying tables
+
+`huxtable` also allows you to edit your table as a data frame in R, and set the formatting so it can be exported with the same layout to multiple software. The code below shows how to do edit `summary_stats_table`
+
+.small[
+
+```r
+# Extract variable labels from data frame
+census_dictionary &lt;-
+  data.frame("Variable" = attributes(census)$var.labels,
+             "name" = names(census))
+
+summary_stats_table &lt;-
+   summary_stats_table %&gt;%
+   rename(name = skim_variable) %&gt;% # Rename var with var names so we can merge the datasets 
+   left_join(census_dictionary) %&gt;% # Merge to variable labels
+   select(-name) %&gt;% # Keep only variable labels instead of names
+   as_hux # Convert it into a huxtable object
+
+
+*summary_stats_table &lt;-
+*  summary_stats_table %&gt;%
+*  relocate(Variable) %&gt;%  # Make variable labels the first column
+*  set_header_rows(1, TRUE) %&gt;% # Use stats name as table header
+*  set_header_cols("Variable", TRUE)  %&gt;%  # Use variable name as row header
+*  theme_basic() # Set a theme for quick formatting
+```
+]
+
+---
+
+# Beautifying tables
+
+`huxtable` also allows you to edit your table as a data frame in R, and set the formatting so it can be exported with the same layout to multiple software. The code below shows how to do edit `summary_stats_table`
+
+.small[
+
+```r
+# Extract variable labels from data frame
+census_dictionary &lt;-
+  data.frame("Variable" = attributes(census)$var.labels,
+             "name" = names(census))
+
+summary_stats_table &lt;-
+   summary_stats_table %&gt;%
+   rename(name = skim_variable) %&gt;% # Rename var with var names so we can merge the datasets 
+   left_join(census_dictionary) %&gt;% # Merge to variable labels
+   select(-name) %&gt;% # Keep only variable labels instead of names
+   as_hux # Convert it into a huxtable object
+
+
+summary_stats_table &lt;- 
+   summary_stats_table %&gt;%
+   relocate(Variable) %&gt;%  # Make variable labels the first column 
+   set_header_rows(1, TRUE) %&gt;% # Use stats name as table header
+   set_header_cols("Variable", TRUE)  %&gt;%  # Use variable name as row header
+   theme_basic() # Set a theme for quick formatting
+
+*# Now export it
+*quick_xlsx(summary_stats_table,
+*          file = file.path(rawOutput, "summary-stats-basic.xlsx"))
+
+*quick_latex(summary_stats_table,
+*          file = file.path(rawOutput, "summary-stats-basic.tex"))
+```
+]
+
+
+
+---
+
 # Other themes to play with
 
-![https://cran.r-project.org/web/packages/huxtable/vignettes/themes.html](pics/themes.png){width=90%}
+![https://cran.r-project.org/web/packages/huxtable/vignettes/themes.html](img/themes.png){width=90%}
+
+---
+
+class: inverse, center, middle
+name: aggregating
+
+# Aggregating observations
+
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#D38C28' size=1px width=1100px&gt;&lt;/html&gt;
+
 ---
 
 # Aggregating observations
@@ -747,11 +857,15 @@ quick_latex(summary_stats_table,
 - On the other hand, its output is a regular data frame, so it is also useful to create constructed data sets.
 - Its Stata equivalent would be `collapse`
 
+--
 .command[
 ## `summarise(.data, ...,)`
 - **data**: the data frame to be summarized
 - **...**: Name-value pairs of summary functions. The name will be the name of the variable in the result.
 ]
+
+--
+
 The "name-value" pairs mentioned under `...` look like this: `new_variable = stat(existing_variable)`, where `stat` takes the same functions as `sfl`
 
 ---
@@ -772,14 +886,15 @@ The "name-value" pairs mentioned under `...` look like this: `new_variable = sta
 ```
 
 
-|region  | Number of States| Total Population| Average Population| SD of Population|
-|:-------|----------------:|----------------:|------------------:|----------------:|
-|NE      |                9|         49135283|            5459476|          5925235|
-|N Cntrl |               12|         58865670|            4905473|          3750094|
-|South   |               16|         74734029|            4670877|          3277853|
-|West    |               13|         43172490|            3320961|          6217177|
+|region  | Number of States| Total Population|
+|:-------|----------------:|----------------:|
+|NE      |                9|         49135283|
+|N Cntrl |               12|         58865670|
+|South   |               16|         74734029|
+|West    |               13|         43172490|
 
 ---
+
 # Aggregating observations
 
 .exercise[
@@ -823,6 +938,8 @@ Recreate the `region_stats` data set,  now including the average and the standar
 
 ---
 
+# Aggregating observations
+
 .exercise[
 ### Exercise &lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 576 512"&gt;&lt;path d="M528 448H48c-26.51 0-48-21.49-48-48V112c0-26.51 21.49-48 48-48h480c26.51 0 48 21.49 48 48v288c0 26.51-21.49 48-48 48zM128 180v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm288 0v-40c0-6.627-5.373-12-12-12H172c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h232c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12z"/&gt;&lt;/svg&gt;
 Use `huxtable` to format and export the object `region_stats`.
@@ -830,7 +947,7 @@ Use `huxtable` to format and export the object `region_stats`.
 
 --
 
-<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-27">
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-31">
 <col><col><col><col><col><tr>
 <th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 3pt 3pt 3pt 3pt; border-top-color: rgb(255, 255, 255);  border-right-color: rgb(255, 255, 255);  border-bottom-color: rgb(255, 255, 255);  border-left-color: rgb(255, 255, 255); padding: 6pt 6pt 6pt 6pt; background-color: rgb(126, 171, 242); font-weight: normal;"><span style="color: rgb(255, 255, 255);">Region</span></th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 3pt 3pt 3pt 3pt; border-top-color: rgb(255, 255, 255);  border-right-color: rgb(255, 255, 255);  border-bottom-color: rgb(255, 255, 255);  border-left-color: rgb(255, 255, 255); padding: 6pt 6pt 6pt 6pt; background-color: rgb(227, 118, 227); font-weight: normal;"><span style="color: rgb(255, 255, 255);">Number of States</span></th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 3pt 3pt 3pt 3pt; border-top-color: rgb(255, 255, 255);  border-right-color: rgb(255, 255, 255);  border-bottom-color: rgb(255, 255, 255);  border-left-color: rgb(255, 255, 255); padding: 6pt 6pt 6pt 6pt; background-color: rgb(252, 187, 3); font-weight: normal;"><span style="color: rgb(255, 255, 255);">Total Population</span></th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 3pt 3pt 3pt 3pt; border-top-color: rgb(255, 255, 255);  border-right-color: rgb(255, 255, 255);  border-bottom-color: rgb(255, 255, 255);  border-left-color: rgb(255, 255, 255); padding: 6pt 6pt 6pt 6pt; background-color: rgb(122, 186, 89); font-weight: normal;"><span style="color: rgb(255, 255, 255);">Average Population</span></th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 3pt 3pt 3pt 3pt; border-top-color: rgb(255, 255, 255);  border-right-color: rgb(255, 255, 255);  border-bottom-color: rgb(255, 255, 255);  border-left-color: rgb(255, 255, 255); padding: 6pt 6pt 6pt 6pt; background-color: rgb(252, 3, 86); font-weight: normal;"><span style="color: rgb(255, 255, 255);">SD of Population</span></th></tr>
 <tr>
@@ -845,6 +962,8 @@ Use `huxtable` to format and export the object `region_stats`.
 
 
 ---
+
+# Aggregating observations
 
 
 ```r
@@ -865,7 +984,7 @@ Use `huxtable` to format and export the object `region_stats`.
 ---
 
 class: inverse, center, middle
-name: sec5
+name: regressing
 
 # Ok, can we run some regressions now?!
 
@@ -888,7 +1007,7 @@ The base R command for linear regressions is called `lm`
 
 Formulas can take three specifications:
 - `y ~ x1 + x2` regresses variable `y` on covariates `x1` and `x2`
-- `y ~ x1:x2` regresses variable `y` the interaction of covariates `x1` and `x2`
+- `y ~ x1:x2` regresses variable `y` on the interaction of covariates `x1` and `x2`
 - `y ~ x1*x2` is equivalent to `y ~ x1 + x2 + x1:x2`
 
 ---
@@ -897,7 +1016,7 @@ Formulas can take three specifications:
 
 .exercise[
 ### Exercise &lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 576 512"&gt;&lt;path d="M528 448H48c-26.51 0-48-21.49-48-48V112c0-26.51 21.49-48 48-48h480c26.51 0 48 21.49 48 48v288c0 26.51-21.49 48-48 48zM128 180v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm288 0v-40c0-6.627-5.373-12-12-12H172c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h232c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12z"/&gt;&lt;/svg&gt;
-Using the `census` data, run a regression of population, urban population and number of marriages. 
+Using the `census` data, run a regression of the number of divorces on population, urban population and number of marriages. 
 ]
 
 .can-edit[
@@ -914,7 +1033,7 @@ Using the `census` data, run a regression of population, urban population and nu
 
 .exercise[
 ### Exercise &lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 576 512"&gt;&lt;path d="M528 448H48c-26.51 0-48-21.49-48-48V112c0-26.51 21.49-48 48-48h480c26.51 0 48 21.49 48 48v288c0 26.51-21.49 48-48 48zM128 180v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm288 0v-40c0-6.627-5.373-12-12-12H172c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h232c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12z"/&gt;&lt;/svg&gt;
-Using the `census` data, run a regression of population, urban population and number of marriages. 
+Using the `census` data, run a regression of the number of divorces on population, urban population and number of marriages. 
 ]
 
 
@@ -1005,7 +1124,7 @@ Formulas for `felm` are more complex, and take the following format:
 
 .exercise[
 ### Exercise &lt;svg style="height:0.8em;top:.04em;position:relative;" viewBox="0 0 576 512"&gt;&lt;path d="M528 448H48c-26.51 0-48-21.49-48-48V112c0-26.51 21.49-48 48-48h480c26.51 0 48 21.49 48 48v288c0 26.51-21.49 48-48 48zM128 180v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm-336 96v-40c0-6.627-5.373-12-12-12H76c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12zm288 0v-40c0-6.627-5.373-12-12-12H172c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h232c6.627 0 12-5.373 12-12zm96 0v-40c0-6.627-5.373-12-12-12h-40c-6.627 0-12 5.373-12 12v40c0 6.627 5.373 12 12 12h40c6.627 0 12-5.373 12-12z"/&gt;&lt;/svg&gt;
-Using the `census` data, run a regression of population, urban population and number of marriages controlling for region fixed effects. 
+Using the `census` data, run a regression of the number of divorces on population, urban population and number of marriages controlling for region fixed effects. 
 ]
 
 .can-edit[
@@ -1035,7 +1154,6 @@ Using the `census` data, run a regression of population, urban population and nu
 ##       pop  popurban  marriage 
 ## 0.0003951 0.0035532 0.1836593
 ```
-]
 
 ---
 
@@ -1082,9 +1200,18 @@ summary(reg2)
 
 .large[
 - Whenever a factor is included in the list of covariates, it is treated as a categorical variable, i.e., as if you had written `i.x` in Stata.
-- Whenever a boolean is included in the list of covariates, it is treat as a dummy variable
+- Whenever a boolean is included in the list of covariates, it is treated as a dummy variable, where `TRUE` is `1` and `FALSE` is `0`.
 - `felm` also allows for bootstrapping, but this is beyong the scope of this session.
 ]
+
+---
+
+class: inverse, center, middle
+name: reg_tables
+
+# Exporting regression tables
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#D38C28' size=1px width=1100px&gt;&lt;/html&gt;
 
 ---
 
@@ -1113,7 +1240,7 @@ summary(reg2)
 huxreg(reg1, reg2)
 ```
 
-<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-35">
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-39">
 <col><col><col><tr>
 <th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1)</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(2)</th></tr>
 <tr>
@@ -1164,7 +1291,7 @@ huxreg(reg1, reg2,
                 after = 7)
 ```
 
-<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-36">
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-40">
 <col><col><col><tr>
 <th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;"></th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(1)</th><th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">(2)</th></tr>
 <tr>
